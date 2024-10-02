@@ -1,3 +1,5 @@
+# THIS IS A COPY FROM ETSFORMER FROM SALESFORCE FOR MY OWN DATA, IS NOT MINE.
+
 # ETSformer: Exponential Smoothing Transformers for Time-series Forecasting
 
 <p align="center">
