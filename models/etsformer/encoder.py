@@ -78,7 +78,13 @@ class FourierLayer(nn.Module):
         # f = rearrange(f[index_tuple], 'b f d -> b f () d').to(x_freq.device)
         # mod
         x_freq, index_tuple = self.topk_freq(x_freq)
+
+        print('antes de conversion',index_tuple)
         index_tuple = torch.tensor(index_tuple).to(x_freq.device)
+        if not isinstance(index_tuple, torch.Tensor):
+            # Asegúrate de que index_tuple sea un tensor de tipo long (índices enteros)
+            index_tuple = torch.tensor(index_tuple, dtype=torch.long).to(x_freq.device)
+        print('despues de conversion',index_tuple)
         f = repeat(f, 'f -> b f d', b=x_freq.size(0), 
                     d=x_freq.size(2))
         f = rearrange(f[index_tuple], 'b f d -> b f () d').to(x_freq.device)
