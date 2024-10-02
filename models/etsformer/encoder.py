@@ -72,8 +72,15 @@ class FourierLayer(nn.Module):
             x_freq = x_freq[:, self.low_freq:]
             f = fft.rfftfreq(t)[self.low_freq:]
 
+        # original
+        # x_freq, index_tuple = self.topk_freq(x_freq)
+        # f = repeat(f, 'f -> b f d', b=x_freq.size(0), d=x_freq.size(2))
+        # f = rearrange(f[index_tuple], 'b f d -> b f () d').to(x_freq.device)
+        # mod
         x_freq, index_tuple = self.topk_freq(x_freq)
-        f = repeat(f, 'f -> b f d', b=x_freq.size(0), d=x_freq.size(2))
+        index_tuple = torch.tensor(index_tuple).to(x_freq.device)
+        f = repeat(f, 'f -> b f d', b=x_freq.size(0), 
+                    d=x_freq.size(2))
         f = rearrange(f[index_tuple], 'b f d -> b f () d').to(x_freq.device)
 
         return self.extrapolate(x_freq, f, t), None
