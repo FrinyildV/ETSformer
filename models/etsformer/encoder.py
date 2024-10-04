@@ -76,17 +76,36 @@ class FourierLayer(nn.Module):
         # x_freq, index_tuple = self.topk_freq(x_freq)
         # f = repeat(f, 'f -> b f d', b=x_freq.size(0), d=x_freq.size(2))
         # f = rearrange(f[index_tuple], 'b f d -> b f () d').to(x_freq.device)
-        # mod
+        
+        # modificacion 1 ---
+        # x_freq, index_tuple = self.topk_freq(x_freq)
+
+        # print('antes de conversion',index_tuple)
+        # index_tuple = torch.tensor(index_tuple).to(x_freq.device)
+        # if not isinstance(index_tuple, torch.Tensor):
+        #     # Asegúrate de que index_tuple sea un tensor de tipo long (índices enteros)
+        #     index_tuple = torch.tensor(index_tuple, dtype=torch.long).to(x_freq.device)
+        # print('despues de conversion',index_tuple)
+        # f = repeat(f, 'f -> b f d', b=x_freq.size(0), 
+        #             d=x_freq.size(2))
+
+        #---- 
+        #---- mod 2
         x_freq, index_tuple = self.topk_freq(x_freq)
 
-        print('antes de conversion',index_tuple)
-        index_tuple = torch.tensor(index_tuple).to(x_freq.device)
-        if not isinstance(index_tuple, torch.Tensor):
-            # Asegúrate de que index_tuple sea un tensor de tipo long (índices enteros)
-            index_tuple = torch.tensor(index_tuple, dtype=torch.long).to(x_freq.device)
-        print('despues de conversion',index_tuple)
-        f = repeat(f, 'f -> b f d', b=x_freq.size(0), 
-                    d=x_freq.size(2))
+        # Verifica si index_tuple es una lista de tuplas
+        if isinstance(index_tuple, (tuple, list)):
+            # Convierte cada elemento de la tupla/lista a un tensor
+            index_tuple = [torch.tensor(idx, dtype=torch.long).to(x_freq.device) for idx in index_tuple]
+            index_tuple = torch.stack(index_tuple, dim=0)  # Combina los tensores en un tensor de dimensiones adecuadas
+
+        print('después de la conversión', index_tuple)
+
+        f = repeat(f, 'f -> b f d', b=x_freq.size(0), d=x_freq.size(2))
+
+        # Usar indexación avanzada con múltiples índices
+        f = f[index_tuple, :, :].to(x_freq.device)
+
         f = rearrange(f[index_tuple], 'b f d -> b f () d').to(x_freq.device)
 
         return self.extrapolate(x_freq, f, t), None
